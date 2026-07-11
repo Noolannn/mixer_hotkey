@@ -1,9 +1,9 @@
 mod config;
 mod utils;
 
-use windows::Win32::UI::{Input::KeyboardAndMouse::{MOD_SHIFT, VK_VOLUME_MUTE}, WindowsAndMessaging::WM_HOTKEY};
+use windows::Win32::UI::WindowsAndMessaging::WM_HOTKEY;
 
-use crate::{config::{Config, Binding}, utils::{AudioSession, get_message, register_hotkey, unregister_hotkey}};
+use crate::{config::Config, utils::get_message};
 
 fn main() {
     let mut path = std::env::current_dir().unwrap();

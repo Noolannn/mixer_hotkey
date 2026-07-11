@@ -1,5 +1,35 @@
 [[bindings]]
 app = "firefox.exe"
-key = 77
+key = 173
 modifier = 4
 delta = 0
+
+[[bindings]]
+app = "firefox.exe"
+key = 175
+modifier = 4
+delta = 5
+
+[[bindings]]
+app = "firefox.exe"
+key = 174
+modifier = 4
+delta = -5
+
+[[bindings]]
+app = "Discord.exe"
+key = 173
+modifier = 2
+delta = 0
+
+[[bindings]]
+app = "Discord.exe"
+key = 175
+modifier = 2
+delta = 5
+
+[[bindings]]
+app = "Discord.exe"
+key = 174
+modifier = 2
+delta = -5
