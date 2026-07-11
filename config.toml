@@ -1,0 +1,5 @@
+[[bindings]]
+app = "firefox.exe"
+key = 77
+modifier = 4
+delta = 0
