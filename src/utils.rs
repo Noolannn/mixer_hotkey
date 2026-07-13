@@ -1,6 +1,6 @@
 use std::{ffi::c_void, mem::MaybeUninit, ptr::null};
 
-use windows::{Win32::{Foundation::{FALSE, HANDLE}, Media::Audio::{IAudioSessionControl, IAudioSessionControl2, IAudioSessionManager2, IMMDevice, IMMDeviceEnumerator, ISimpleAudioVolume, MMDeviceEnumerator, eMultimedia, eRender}, System::{Com::{CLSCTX_ALL, COINIT_MULTITHREADED, CoCreateInstance, CoInitializeEx}, LibraryLoader::GetModuleHandleA, Threading::{OpenProcess, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW}}, UI::{Input::{GetRawInputData, GetRawInputDeviceInfoA, GetRawInputDeviceList, HRAWINPUT, KeyboardAndMouse::{HOT_KEY_MODIFIERS, MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_WIN, RegisterHotKey, UnregisterHotKey}, RAWINPUTDEVICELIST, RID_DEVICE_INFO, RID_HEADER, RIDI_DEVICEINFO, RIDI_DEVICENAME}, WindowsAndMessaging::{CreateWindowExA, GetMessageA, HWND_MESSAGE, MSG, RegisterClassA, RegisterClassExA, WM_INPUT, WM_KEYFIRST, WNDCLASSEXA, WS_BORDER, WS_CAPTION, WS_EX_APPWINDOW, WS_OVERLAPPEDWINDOW}}}, core::{HRESULT, Interface, PCSTR, PWSTR}};
+use windows::{Win32::{Foundation::{FALSE, HANDLE, LPARAM, WPARAM}, Media::Audio::{IAudioSessionControl, IAudioSessionControl2, IAudioSessionManager2, IMMDevice, IMMDeviceEnumerator, ISimpleAudioVolume, MMDeviceEnumerator, eMultimedia, eRender}, System::{Com::{CLSCTX_ALL, COINIT_MULTITHREADED, CoCreateInstance, CoInitializeEx}, LibraryLoader::GetModuleHandleA, Threading::{GetCurrentThreadId, OpenProcess, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW}}, UI::{Input::{GetRawInputData, GetRawInputDeviceInfoA, GetRawInputDeviceList, HRAWINPUT, KeyboardAndMouse::{HOT_KEY_MODIFIERS, MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_WIN, RegisterHotKey, UnregisterHotKey}, RAWINPUTDEVICELIST, RID_DEVICE_INFO, RID_HEADER, RIDI_DEVICEINFO, RIDI_DEVICENAME}, WindowsAndMessaging::{CreateWindowExA, GetMessageA, HWND_MESSAGE, MSG, PostQuitMessage, PostThreadMessageA, RegisterClassA, RegisterClassExA, WM_INPUT, WM_KEYFIRST, WM_QUIT, WNDCLASSEXA, WS_BORDER, WS_CAPTION, WS_EX_APPWINDOW, WS_OVERLAPPEDWINDOW}}}, core::{HRESULT, Interface, PCSTR, PWSTR}};
 
 pub fn get_raw_input_device_list() -> Vec<RAWINPUTDEVICELIST> {
     let mut device_number = 0;
@@ -37,16 +37,29 @@ pub fn get_raw_input_device_info_a(handle: HANDLE) -> RID_DEVICE_INFO {
 pub fn get_message() -> MSG {
     let mut lpmsg = MaybeUninit::<MSG>::uninit();
     unsafe {
-        let res = GetMessageA(lpmsg.as_mut_ptr(), None, 0, 0);
+        let _res = GetMessageA(lpmsg.as_mut_ptr(), None, 0, 0);
         let lpmsg = lpmsg.assume_init();
-        if lpmsg.message == WM_INPUT {
-            // GetRawInputData(std::mem::transmute(lpmsg.lParam), RID_HEADER, pdata, pcbsize, cbsizeheader);
-        }
-        if res == FALSE {
-            panic!();
-        }
         return lpmsg;
     }
+}
+
+pub fn post_quit_message() {
+    unsafe { PostQuitMessage(0) }
+}
+
+pub fn post_message_to_thread(thread_id: u32, msg: u32, wparam: WPARAM, lparam: LPARAM) -> Result<(), WinApiError> {
+    match unsafe { PostThreadMessageA(thread_id, msg, wparam, lparam) } {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(WinApiError::Other)
+    }
+}
+
+pub fn post_quit_message_to_thread(thread_id: u32) -> Result<(), WinApiError> {
+    return post_message_to_thread(thread_id, WM_QUIT, WPARAM(0), LPARAM(0));
+}
+
+pub fn get_current_thread_id() -> u32 {
+    unsafe { GetCurrentThreadId() }
 }
 
 pub fn create_window_ex_a() {
@@ -215,7 +228,7 @@ impl AudioSession {
             }
         };
         let mut sessions = vec![];
-        println!("Found {} sessions", count);
+        // println!("Found {} sessions", count);
         for i in 0..count {
             let session: IAudioSessionControl = unsafe {
                 match enumerator.GetSession(i) {
