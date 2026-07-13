@@ -1,5 +1,13 @@
 # mixer_hotkey
 
+Use hotkeys to manage the volume of your applications.
+
+## Get started
+
+Download mixer_hotkey from the `Release` section, setup a `config.toml` file to create your hotkeys (follow the subsection below for more informations) and put it next to `mixer_hotkey.exe`. Then start the program, you can use `1` to list all opened audio session (useful if you need the exact name of the application to create your hotkeys), or `2` to start executing your hotkeys from the `config.toml`.
+
+If you open an application after starting your hotkeys, you have to restart the hotkeys : just enter `q` to quit hotkey execution and restart it by typing `2`.
+
 ## Config
 
 mixer_hotkey works thanks to a config file, here is how to use it.
